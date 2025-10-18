@@ -30,8 +30,7 @@ export default function Videos() {
       setDialogOpen(false);
       setUploading(false);
       setUploadProgress(0);
-      const videoTitle = formData.get("title") as string || "Video";
-      notifications.videoUploaded(videoTitle);
+      notifications.videoUploaded("Video");
     },
     onError: (error) => {
       notifications.videoUploadFailed(error.message);
@@ -111,7 +110,7 @@ export default function Videos() {
       setUploadProgress(90);
       createMutation.mutate(data);
     } catch (error) {
-      toast.error("Failed to upload video: " + (error instanceof Error ? error.message : "Unknown error"));
+      notify.error("Upload Failed", "Failed to upload video: " + (error instanceof Error ? error.message : "Unknown error"));
       setUploading(false);
       setUploadProgress(0);
     }

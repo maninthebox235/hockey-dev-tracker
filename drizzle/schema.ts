@@ -148,6 +148,8 @@ export const videoAnalysisResults = mysqlTable("videoAnalysisResults", {
   totalFrames: int("totalFrames"),
   message: text("message"),
   analysisData: text("analysisData"), // JSON string of full analysis results
+  results: text("results"), // JSON string of analysis results (alias for analysisData)
+  errorMessage: text("errorMessage"), // Error message if analysis failed
   startedAt: timestamp("startedAt"),
   completedAt: timestamp("completedAt"),
   createdAt: timestamp("createdAt").defaultNow(),

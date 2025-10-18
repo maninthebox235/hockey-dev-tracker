@@ -126,7 +126,7 @@ export function cancelUploadSession(uploadId: string): void {
 // Clean up old sessions (older than 1 hour)
 setInterval(() => {
   const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
-  for (const [uploadId, session] of uploadSessions.entries()) {
+  for (const [uploadId, session] of Array.from(uploadSessions.entries())) {
     if (session.createdAt < oneHourAgo) {
       uploadSessions.delete(uploadId);
       console.log(`[Resumable Upload] Cleaned up expired session ${uploadId}`);
