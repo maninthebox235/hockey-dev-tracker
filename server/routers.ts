@@ -480,17 +480,26 @@ const videoAnalysisRouter = router({
         startedAt: new Date(),
       });
 
-      // Start analysis (this will run in background)
-      // In production, use a job queue like BullMQ
-      // For now, we'll use a simple background process
-      const { startVideoAnalysis } = await import("./videoAnalysisService");
+      // Start analysis using microservice
+      const { startVideoAnalysisMicroservice, checkMicroserviceHealth } = await import("./videoAnalysisMicroservice");
       
-      // Start the analysis with the video URL
-      // The service will handle downloading/accessing the video file
-      startVideoAnalysis(input.videoId, video.videoUrl || "").catch((error) => {
-        console.error(`Failed to start video analysis for ${input.videoId}:`, error);
-        db.setVideoAnalysisFailed(input.videoId, error.message);
-      });
+      // Check if microservice is available
+      const isHealthy = await checkMicroserviceHealth();
+      if (!isHealthy) {
+        console.warn('[Video Analysis] Microservice not available, falling back to local processing');
+        // Fallback to local processing if microservice unavailable
+        const { startVideoAnalysis } = await import("./videoAnalysisService");
+        startVideoAnalysis(input.videoId, video.videoUrl || "").catch((error) => {
+          console.error(`Failed to start video analysis for ${input.videoId}:`, error);
+          db.setVideoAnalysisFailed(input.videoId, error.message);
+        });
+      } else {
+        // Use microservice
+        startVideoAnalysisMicroservice(input.videoId, video.videoUrl || "").catch((error) => {
+          console.error(`Failed to start video analysis for ${input.videoId}:`, error);
+          db.setVideoAnalysisFailed(input.videoId, error.message);
+        });
+      }
 
       return { message: "Analysis started", analysisId };
     }),
