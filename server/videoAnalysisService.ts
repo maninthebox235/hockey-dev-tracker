@@ -143,6 +143,31 @@ export async function startVideoAnalysis(
       fs.mkdirSync(outputDir, { recursive: true });
     }
 
+  // Check if Python is available
+  try {
+    execSync('python3 --version', { stdio: 'ignore' });
+  } catch (pythonError) {
+    const error = 'Python not available - video analysis requires Python environment';
+    console.error(`[Video Analysis] ${error}`);
+    analysisProgress.set(videoId, {
+      videoId,
+      status: "failed",
+      progress: 0,
+      message: error,
+      startedAt: new Date(),
+      completedAt: new Date(),
+    });
+    // Update database
+    const db = await getDb();
+    if (db) {
+      await db
+        .update(videoAnalysisResults)
+        .set({ status: "failed", progress: 0, errorMessage: error })
+        .where(eq(videoAnalysisResults.videoId, videoId));
+    }
+    return;
+  }
+
   // Spawn Python process
   const pythonProcess = spawn("python3", [scriptPath, videoPath, videoId, outputPath]);
 
