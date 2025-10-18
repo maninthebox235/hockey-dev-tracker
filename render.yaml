@@ -1,0 +1,49 @@
+services:
+  - type: web
+    name: hockey-dev-tracker
+    env: node
+    region: oregon
+    plan: starter
+    buildCommand: pnpm install --frozen-lockfile && pnpm build
+    startCommand: node dist/index.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: DATABASE_URL
+        sync: false  # Set this in Render dashboard
+      - key: JWT_SECRET
+        generateValue: true
+      - key: VITE_APP_TITLE
+        value: Hockey Development Tracker
+      - key: VITE_APP_LOGO
+        value: /logo.png
+      - key: VITE_OAUTH_PORTAL_URL
+        value: https://vida.butterfly-effect.dev
+      - key: OAUTH_SERVER_URL
+        value: https://vidabiz.butterfly-effect.dev
+      - key: VITE_ANALYTICS_ENDPOINT
+        value: ""
+      - key: VITE_ANALYTICS_WEBSITE_ID
+        value: ""
+      - key: OPENAI_API_URL
+        value: https://api.openai.com/v1
+      - key: OPENAI_API_KEY
+        sync: false  # Set this in Render dashboard
+      - key: AWS_ACCESS_KEY_ID
+        sync: false  # Set this in Render dashboard
+      - key: AWS_SECRET_ACCESS_KEY
+        sync: false  # Set this in Render dashboard
+      - key: AWS_REGION
+        value: us-east-1
+      - key: AWS_S3_BUCKET
+        sync: false  # Set this in Render dashboard
+
+databases:
+  - name: hockey-tracker-db
+    databaseName: hockey_tracker
+    user: hockey_user
+    plan: starter
+

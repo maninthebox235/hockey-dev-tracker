@@ -48,14 +48,22 @@ export async function setupVite(app: Express, server: Server) {
 }
 
 export function serveStatic(app: Express) {
+  // In production, the built server is at dist/index.js
+  // and the public files are at dist/public
+  // So we need to go up one level from the built server location
   const distPath =
     process.env.NODE_ENV === "development"
       ? path.resolve(import.meta.dirname, "../..", "dist", "public")
-      : path.resolve(import.meta.dirname, "public");
+      : path.resolve(import.meta.dirname, "..", "public");
+  
+  console.log(`Serving static files from: ${distPath}`);
+  
   if (!fs.existsSync(distPath)) {
     console.error(
       `Could not find the build directory: ${distPath}, make sure to build the client first`
     );
+    console.error(`Current directory: ${process.cwd()}`);
+    console.error(`__dirname equivalent: ${import.meta.dirname}`);
   }
 
   app.use(express.static(distPath));

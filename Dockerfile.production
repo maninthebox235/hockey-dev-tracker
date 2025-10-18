@@ -1,0 +1,96 @@
+# Production-ready multi-stage Dockerfile for Hockey Development Tracker
+# Optimized for deployment platforms with proper error handling
+
+# Stage 1: Dependencies
+FROM node:22-slim AS deps
+
+WORKDIR /app
+
+# Install pnpm
+RUN npm install -g pnpm@10.4.1
+
+# Copy package files
+COPY package.json pnpm-lock.yaml ./
+
+# Install dependencies with retry logic
+RUN pnpm install --frozen-lockfile --prefer-offline || \
+    (echo "First install failed, retrying..." && pnpm install --frozen-lockfile)
+
+# Stage 2: Builder
+FROM node:22-slim AS builder
+
+WORKDIR /app
+
+# Install pnpm
+RUN npm install -g pnpm@10.4.1
+
+# Copy dependencies from deps stage
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/package.json ./package.json
+COPY --from=deps /app/pnpm-lock.yaml ./pnpm-lock.yaml
+
+# Copy source code
+COPY . .
+
+# Set build-time environment variables with defaults
+ENV VITE_APP_TITLE="Hockey Development Tracker"
+ENV VITE_APP_LOGO="https://placehold.co/40x40/1e40af/ffffff?text=H"
+ENV VITE_ANALYTICS_ENDPOINT=""
+ENV VITE_ANALYTICS_WEBSITE_ID=""
+ENV NODE_ENV=production
+
+# Build the application
+RUN pnpm build
+
+# Verify build output
+RUN ls -la dist/ && \
+    test -f dist/index.js || (echo "Build failed: dist/index.js not found" && exit 1)
+
+# Stage 3: Production runtime
+FROM node:22-slim AS runner
+
+WORKDIR /app
+
+# Install pnpm for running the app
+RUN npm install -g pnpm@10.4.1
+
+# Copy only production dependencies
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/package.json ./package.json
+
+# Copy built application
+COPY --from=builder /app/dist ./dist
+
+# Copy necessary runtime files
+COPY --from=builder /app/drizzle ./drizzle
+COPY --from=builder /app/shared ./shared
+
+# Create necessary directories with proper permissions
+RUN mkdir -p /tmp/uploads /tmp/analysis_results /app/storage && \
+    chmod -R 755 /tmp/uploads /tmp/analysis_results /app/storage
+
+# Set production environment
+ENV NODE_ENV=production
+ENV PORT=3000
+
+# Expose port
+EXPOSE 3000
+
+# Add healthcheck
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:3000/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)}).on('error', () => process.exit(1))"
+
+# Create non-root user
+RUN useradd -m -u 1001 appuser && \
+    chown -R appuser:appuser /app /tmp
+
+# Switch to non-root user
+USER appuser
+
+# Copy startup script
+COPY --from=builder /app/start.sh ./start.sh
+RUN chmod +x start.sh
+
+# Start application with diagnostic script
+CMD ["./start.sh"]
+
