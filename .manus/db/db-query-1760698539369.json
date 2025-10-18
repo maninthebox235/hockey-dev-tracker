@@ -1,0 +1,17 @@
+{
+  "query": "SELECT id, title, videoType, description, createdAt FROM videos ORDER BY createdAt DESC LIMIT 5",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3naQz1cbAWBpEKV.root --database XtMk7vTmuoWpREi44htMJ3 --execute SELECT id, title, videoType, description, createdAt FROM videos ORDER BY createdAt DESC LIMIT 5",
+  "rows": [
+    {
+      "id": "2e33b27c-a7fe-440c-b816-2ec5c13c142d",
+      "title": "Isaac practice fall of 2024",
+      "videoType": "drill",
+      "description": "NULL",
+      "createdAt": "2025-10-17 10:52:23"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\ttitle\tvideoType\tdescription\tcreatedAt\n2e33b27c-a7fe-440c-b816-2ec5c13c142d\tIsaac practice fall of 2024\tdrill\tNULL\t2025-10-17 10:52:23\n",
+  "stderr": "",
+  "execution_time_ms": 728
+}
