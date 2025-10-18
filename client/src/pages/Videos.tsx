@@ -11,7 +11,7 @@ import { trpc } from "@/lib/trpc";
 import { uploadFileResumable, shouldUseResumableUpload } from "@/lib/resumableUpload";
 import { Plus, Video as VideoIcon, Upload, Sparkles } from "lucide-react";
 import { useState, useRef } from "react";
-import { toast } from "sonner";
+import { notify, notifications } from "@/lib/notifications";
 import { Link } from "wouter";
 
 export default function Videos() {
@@ -30,10 +30,11 @@ export default function Videos() {
       setDialogOpen(false);
       setUploading(false);
       setUploadProgress(0);
-      toast.success("Video uploaded successfully");
+      const videoTitle = formData.get("title") as string || "Video";
+      notifications.videoUploaded(videoTitle);
     },
     onError: (error) => {
-      toast.error("Failed to upload video: " + error.message);
+      notifications.videoUploadFailed(error.message);
       setUploading(false);
       setUploadProgress(0);
     },
@@ -45,14 +46,14 @@ export default function Videos() {
     
     const file = formData.get("video") as File;
     if (!file || file.size === 0) {
-      toast.error("Please select a video file");
+      notify.error("No file selected", "Please select a video file to upload");
       return;
     }
     
     // Check file size (1GB limit with resumable upload)
     const maxSize = 1024 * 1024 * 1024; // 1GB
     if (file.size > maxSize) {
-      toast.error(`File too large. Maximum size is 1GB. Your file is ${(file.size / 1024 / 1024).toFixed(1)}MB`);
+      notify.error("File too large", `Maximum size is 1GB. Your file is ${(file.size / 1024 / 1024).toFixed(1)}MB`);
       return;
     }
 

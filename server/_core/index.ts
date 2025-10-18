@@ -10,6 +10,7 @@ import { serveStatic, setupVite } from "./vite";
 import uploadEndpoint from "./uploadEndpoint";
 import chunkedUploadEndpoint from "./chunkedUploadEndpoint";
 import resumableUploadEndpoint from "./resumableUploadEndpoint";
+import { healthCheck } from "./healthCheck";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -33,6 +34,9 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 async function startServer() {
   const app = express();
   const server = createServer(app);
+  
+  // Health check endpoint
+  app.get("/api/health", healthCheck);
   
   // Configure body parser with larger size limit (BEFORE most routes)
   app.use(express.json({ limit: "50mb" }));

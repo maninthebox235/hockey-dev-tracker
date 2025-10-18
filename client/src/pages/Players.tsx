@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { trpc } from "@/lib/trpc";
 import { Plus, Edit, Trash2, User } from "lucide-react";
 import { useState } from "react";
-import { toast } from "sonner";
+import { notify, notifications } from "@/lib/notifications";
 import { Link } from "wouter";
 
 export default function Players() {
@@ -24,10 +24,11 @@ export default function Players() {
       utils.players.list.invalidate();
       utils.players.listActive.invalidate();
       setDialogOpen(false);
-      toast.success("Player created successfully");
+      const playerName = players?.find(p => p.id)?.name || "Player";
+      notifications.playerAdded(playerName);
     },
     onError: (error) => {
-      toast.error("Failed to create player: " + error.message);
+      notify.error("Failed to create player", error.message);
     },
   });
 
@@ -37,10 +38,10 @@ export default function Players() {
       utils.players.listActive.invalidate();
       setDialogOpen(false);
       setEditingPlayer(null);
-      toast.success("Player updated successfully");
+      notifications.playerUpdated(editingPlayer?.name || "Player");
     },
     onError: (error) => {
-      toast.error("Failed to update player: " + error.message);
+      notify.error("Failed to update player", error.message);
     },
   });
 
@@ -48,10 +49,10 @@ export default function Players() {
     onSuccess: () => {
       utils.players.list.invalidate();
       utils.players.listActive.invalidate();
-      toast.success("Player deleted successfully");
+      notify.success("Player deleted", "Player has been removed from the roster");
     },
     onError: (error) => {
-      toast.error("Failed to delete player: " + error.message);
+      notify.error("Failed to delete player", error.message);
     },
   });
 
