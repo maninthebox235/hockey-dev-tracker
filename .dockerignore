@@ -1,22 +1,52 @@
+# Dependencies
 node_modules
 dist
+
+# Git
 .git
+.gitignore
+
+# Environment
 .env
+.env.*
+
+# Logs
 *.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Documentation
 *.md
-TEST_RESULTS.md
-VIDEO_ANALYSIS_GUIDE.md
-LARGE_FILE_UPLOAD.md
-NOTIFICATIONS_GUIDE.md
+!README.md
+
+# Test files
 test_video_analysis.py
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+
+# Model files (will be downloaded at runtime)
 *.pt
 yolov8*.pt
+
+# Runtime directories
 analysis_results
 uploads
+/tmp
+
+# IDE
 .vscode
 .idea
 *.swp
 *.swo
 *~
+
+# OS
 .DS_Store
+Thumbs.db
+
+# Build artifacts
+*.tsbuildinfo
+.cache
 
