@@ -95,7 +95,12 @@ export default function DashboardLayout({
           {/* Modern sign-in button */}
           <Button
             onClick={() => {
-              window.location.href = getLoginUrl();
+              const loginUrl = getLoginUrl();
+              if (loginUrl) {
+                window.location.href = loginUrl;
+              } else {
+                alert("OAuth is not configured. Please contact the administrator.");
+              }
             }}
             size="lg"
             className="w-full shadow-2xl hover:shadow-primary/20 transition-all duration-300 hover:scale-105 glow-primary"
