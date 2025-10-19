@@ -1,5 +1,6 @@
 import "dotenv/config";
 import express from "express";
+import cookieParser from "cookie-parser";
 import { createServer } from "http";
 import net from "net";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
@@ -11,6 +12,7 @@ import uploadEndpoint from "./uploadEndpoint";
 import chunkedUploadEndpoint from "./chunkedUploadEndpoint";
 import resumableUploadEndpoint from "./resumableUploadEndpoint";
 import { healthCheck } from "./healthCheck";
+import authRoutes from "../routes/auth";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -41,12 +43,16 @@ async function startServer() {
   // Configure body parser with larger size limit (BEFORE most routes)
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
+  app.use(cookieParser());
   
   // File upload endpoints - register specific routes BEFORE general routes
   // More specific routes must come first to avoid conflicts
   app.use("/api/upload/resumable", resumableUploadEndpoint);
   app.use("/api/upload/chunked", chunkedUploadEndpoint);
   app.use("/api/upload", uploadEndpoint);
+  
+  // Auth routes for email/password authentication
+  app.use("/api/auth", authRoutes);
   
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);

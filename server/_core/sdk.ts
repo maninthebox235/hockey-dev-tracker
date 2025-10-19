@@ -257,9 +257,33 @@ class SDKServer {
   }
 
   async authenticateRequest(req: Request): Promise<User> {
-    // Regular authentication flow
     const cookies = this.parseCookies(req.headers.cookie);
     const sessionCookie = cookies.get(COOKIE_NAME);
+    
+    // Try email/password auth first (JWT with userId)
+    const authToken = cookies.get("auth_token");
+    if (authToken) {
+      try {
+        const jwt = require("jsonwebtoken");
+        const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production";
+        const decoded = jwt.verify(authToken, JWT_SECRET) as { userId: string; email: string };
+        
+        const user = await db.getUser(decoded.userId);
+        if (user) {
+          // Update last signed in
+          await db.upsertUser({
+            id: user.id,
+            lastSignedIn: new Date(),
+          });
+          return user;
+        }
+      } catch (error) {
+        console.warn("[Auth] Email/password auth token invalid:", error);
+        // Fall through to OAuth
+      }
+    }
+    
+    // Fall back to OAuth authentication
     const session = await this.verifySession(sessionCookie);
 
     if (!session) {

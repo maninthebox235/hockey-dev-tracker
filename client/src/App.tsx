@@ -9,11 +9,13 @@ import Players from "./pages/Players";
 import Seasons from "./pages/Seasons";
 import Videos from "./pages/Videos";
 import VideoDetail from "./pages/VideoDetail";
+import AuthPage from "./pages/AuthPage";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
+      <Route path={"/auth"} component={AuthPage} />
       <Route path={"/"} component={Home} />
       <Route path={"/players"} component={Players} />
       <Route path={"/seasons"} component={Seasons} />
